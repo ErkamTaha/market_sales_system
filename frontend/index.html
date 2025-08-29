@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Satış Sistemi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/3.4.4/vuetify.min.css" rel="stylesheet">
+    <style>
+        .barcode-input {
+            background-color: #f5f5f5;
+        }
+        .sale-item-card {
+            transition: all 0.3s ease;
+        }
+        .sale-item-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .critical-stock {
+            background-color: #ffebee !important;
+        }
+        .expired-product {
+            background-color: #fce4ec !important;
+        }
+        .expiring-soon {
+            background-color: #fff3e0 !important;
+        }
+        .icon-text {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        .custom-btn {
+            min-width: 44px;
+            height: 36px;
+        }
+        .router-link-active {
+            background-color: rgba(25, 118, 210, 0.12);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <v-app>
+            <!-- ========================================= -->
+            <!-- SOL MENÜ (Her sayfada aynı kalacak)       -->
+            <!-- ========================================= -->
+            <v-navigation-drawer v-model="$store.state.drawer" app>
+                <v-list>
+                    <!-- Router-link kullanarak sayfa geçişleri -->
+                    <v-list-item :to="{ name: 'home' }" exact>
+                        <template v-slot:prepend>
+                            <span class="icon-text">💰</span>
+                        </template>
+                        <v-list-item-title>Satış</v-list-item-title>
+                    </v-list-item>
+                    
+                    <v-list-item :to="{ name: 'products' }">
+                        <template v-slot:prepend>
+                            <span class="icon-text">📦</span>
+                        </template>
+                        <v-list-item-title>Ürün Yönetimi</v-list-item-title>
+                    </v-list-item>
+                    
+                    <v-list-item :to="{ name: 'reports' }">
+                        <template v-slot:prepend>
+                            <span class="icon-text">📊</span>
+                        </template>
+                        <v-list-item-title>Raporlar</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+
+            <!-- ========================================= -->
+            <!-- ÜST BAR (Her sayfada aynı kalacak)        -->
+            <!-- ========================================= -->
+            <v-app-bar app color="primary" dark>
+                <v-app-bar-nav-icon @click="$store.commit('TOGGLE_DRAWER')">☰</v-app-bar-nav-icon>
+                <v-toolbar-title>Market Satış Sistemi</v-toolbar-title>
+                <v-spacer></v-spacer>
+                
+                <!-- Sepet bilgisi (her sayfada görünür) -->
+                <v-chip color="success" v-if="$store.state.saleItems.length > 0">
+                    🛒 {{ $store.state.saleItems.length }} ürün - {{ $store.getters.totalCartAmount.toFixed(2) }} ₺
+                </v-chip>
+            </v-app-bar>
+
+            <!-- ========================================= -->
+            <!-- ANA İÇERİK ALANI (Sayfa içerikleri burada gösterilir) -->
+            <!-- ========================================= -->
+            <v-main>
+                <!-- 
+                Bu kısım en önemli! 
+                router-view, URL'ye göre farklı componentleri gösterir:
+                - / -> HomeComponent (Satış sayfası)
+                - /products -> ProductsComponent (Ürün yönetimi)
+                - /reports -> ReportsComponent (Raporlar)
+                -->
+                <router-view></router-view>
+            </v-main>
+
+            <!-- ========================================= -->
+            <!-- GLOBAL SNACKBAR (Her sayfada aynı)       -->
+            <!-- ========================================= -->
+            <v-snackbar
+                v-model="$store.state.snackbar"
+                :color="$store.state.snackbarColor"
+                :timeout="4000"
+            >
+                {{ $store.state.snackbarText }}
+                <template v-slot:actions>
+                    <v-btn variant="text" @click="$store.commit('HIDE_SNACKBAR')">Kapat</v-btn>
+                </template>
+            </v-snackbar>
+        </v-app>
+    </div>
+    
+    <!-- Vue 3 ve Vue Router -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.8/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/4.2.5/vue-router.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vuex/4.1.0/vuex.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/3.4.4/vuetify.min.js"></script>
+
+    <!-- Vue Template Compiler (SFC desteği için) -->
+    <script src="https://unpkg.com/@vue/compiler-sfc@3.3.8/dist/compiler-sfc.global.js"></script>
+    
+    <!-- Uygulama Dosyaları (SIRALA ÖNEMLİ!) -->
+    <script src="store.js"></script>           <!-- Önce store -->
+    <script src="router.js"></script>         <!-- Sonra router -->
+    <script src="app.js"></script>            <!-- En son ana app -->
+</body>
+</html>

@@ -6,8 +6,15 @@
           @click="isForSale ? selectItem(index) : showDetails(index)">
           <div v-if="item.itemSelected && isForSale">
             <div color="primary" class="inner-border"></div>
+          </div>
+          <div v-if="item.itemSelected && isForSale">
             <v-icon color="primary" size="24" class="mark-icon">
-              mdi-check
+              mdi-circle
+            </v-icon>
+          </div>
+          <div v-else-if="isForSale">
+            <v-icon color="primary" size="24" class="mark-icon">
+              mdi-circle-outline
             </v-icon>
           </div>
           <v-card-text class="d-flex flex-column align-center text-center">
@@ -16,7 +23,7 @@
             </v-avatar>
             <h3>{{ item.product.name }}</h3>
             <v-chip color="success" size="small">
-              {{ item.product.price }} ₺
+              {{ item.product.price }} ₺ - {{ item.product.unit }}
             </v-chip>
             <div class="d-flex align-center" justify-center mt-2 v-if="isForSale">
               <v-btn size="small" icon @click.stop="decreaseQuantity(index)" class="custom-btn">

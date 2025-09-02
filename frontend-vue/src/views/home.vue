@@ -5,8 +5,8 @@
         <!-- Barkod Okuma Kartı -->
         <v-card class="mb-4">
           <v-card-title>
-            <v-icon>mdi-camera</v-icon>
-            Ürün Okuma
+            <v-icon>mdi-barcode</v-icon>
+            Barkod Okuma
           </v-card-title>
           <v-card-text>
             <v-row>
@@ -139,7 +139,8 @@
         <v-card-actions class="pa-4 bg-grey-lighten-5">
           <v-spacer></v-spacer>
           <v-btn @click="showManualProduct = false" variant="outlined">İptal</v-btn>
-          <v-btn color="primary" @click="addManualProduct">Ekle</v-btn>
+          <v-btn color="primary" :disabled="selectedManualProduct === null && selectedItems.length === 0"
+            @click="addManualProduct">Ekle</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

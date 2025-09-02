@@ -17,7 +17,7 @@
     <!-- Hızlı İstatistikler -->
     <v-row class="mb-4">
       <v-col cols="12" md="3">
-        <v-card hover @click=filterFromCards(0) class="lighten-hover" color="success" dark>
+        <v-card hover @click=filterFromCards(0) :class="getCardClass(0)" color="success" dark>
           <v-card-text class="text-center">
             <v-icon>mdi-package</v-icon>
             <h3>{{ $store.state.products.length }}</h3>
@@ -26,7 +26,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="3">
-        <v-card hover @click=filterFromCards(1) class="lighten-hover" color="warning" dark>
+        <v-card hover @click=filterFromCards(1) :class="getCardClass(1)" color="warning" dark>
           <v-card-text class="text-center">
             <v-icon>mdi-alert</v-icon>
             <h3>{{ $store.state.lowStockProducts.length }}</h3>
@@ -35,7 +35,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="3">
-        <v-card hover @click=filterFromCards(2) class="lighten-hover" color="error" dark>
+        <v-card hover @click=filterFromCards(2) :class="getCardClass(2)" color="error" dark>
           <v-card-text class="text-center">
             <v-icon>mdi-calendar-clock</v-icon>
             <h3>{{ $store.state.expiredProducts.length }}</h3>
@@ -44,7 +44,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="3">
-        <v-card hover @click=filterFromCards(3) class="lighten-hover" color="info" dark>
+        <v-card hover @click=filterFromCards(3) :class="getCardClass(3)" color="info" dark>
           <v-card-text class="text-center">
             <v-icon>mdi-alarm</v-icon>
             <h3>{{ $store.state.expiringProducts.length }}</h3>
@@ -289,17 +289,71 @@
   </v-container>
 </template>
 
+<style scoped>
+.mark-icon {
+  position: absolute;
+  top: 4px;
+  /* distance from top */
+  left: 4px;
+  /* distance from left */
+  z-index: 10;
+  /* above other content */
+}
+
+.card-selected {
+  --text-color: white;
+  --text-opacity: 1;
+  --bg-opacity: 1;
+}
+
+.card-unselected {
+  --text-color: black;
+  --text-opacity: 0.8;
+  --bg-opacity: 0.2;
+}
+
+/* Apply background opacity using filter or background-color with alpha */
+.card-unselected::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  /* White overlay to reduce card opacity */
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Text styling */
+.v-card .v-card-text,
+.v-card .v-card-text .v-icon,
+.v-card .v-card-text h3,
+.v-card .v-card-text p {
+  color: var(--text-color) !important;
+  opacity: var(--text-opacity) !important;
+  transition: color 0.3s ease, opacity 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.card-unselected:hover {
+  opacity: 0.7 !important;
+}
+</style>
+
 <script>
 export default {
   name: 'ProductsComponent',
 
   data() {
     return {
+      selectedCard: 0,
       // Arama ve filtreler
       productSearch: '',
       categoryFilter: '',
       stockFilter: '',
-      cardFilter: 0,
 
       // Modal durumları
       showAddProduct: false,
@@ -373,8 +427,8 @@ export default {
     filteredProducts() {
       let filtered = this.$store.state.products;
 
-      if (this.cardFilter) {
-        switch (this.cardFilter) {
+      if (this.selectedCard) {
+        switch (this.selectedCard) {
           case 0:
             filtered = this.$store.state.products;
             break;
@@ -437,8 +491,14 @@ export default {
   },
 
   methods: {
-    filterFromCards(filter) {
-      this.cardFilter = filter;
+    getCardClass(cardIndex) {
+      return {
+        'card-selected': this.selectedCard === cardIndex,
+        'card-unselected': this.selectedCard !== null && this.selectedCard !== cardIndex
+      };
+    },
+    filterFromCards(cardIndex) {
+      this.selectedCard = cardIndex;
     },
     // Modal açma/kapama
     openAddProductDialog() {
@@ -646,6 +706,7 @@ export default {
       this.productSearch = '';
       this.categoryFilter = '';
       this.stockFilter = '';
+      this.selectedCard = null;
     },
 
     // Yardımcı fonksiyonlar
@@ -674,13 +735,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.lighten-hover {
-  transition: filter 0.2s ease-in-out;
-}
-
-.lighten-hover:hover {
-  filter: brightness(1.1);
-}
-</style>

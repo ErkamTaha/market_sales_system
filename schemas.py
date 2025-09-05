@@ -14,7 +14,7 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     expiry_date: Optional[date] = None
     is_active: bool = True
-    is_barcode_easy: bool = True
+    fast_select: bool = False
 
 class ProductCreate(ProductBase):
     pass
@@ -30,7 +30,7 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     expiry_date: Optional[date] = None
     is_active: Optional[bool] = None
-    is_barcode_easy: Optional[bool] = None
+    fast_select: Optional[bool] = None
 
 class Product(ProductBase):
     model_config = ConfigDict(from_attributes=True)

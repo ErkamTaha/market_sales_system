@@ -21,7 +21,7 @@ class Product(Base):
     expiry_date = Column(Date)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    is_barcode_easy = Column(Boolean, default=True)
+    fast_select = Column(Boolean, default=False)
     
     # İlişkiler
     sale_items = relationship("SaleItem", back_populates="product")

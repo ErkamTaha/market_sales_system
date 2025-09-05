@@ -124,8 +124,8 @@
             @change="toggleProductActiveness(item)"></v-switch>
         </template>
 
-        <template v-slot:[`item.is_barcode_easy`]="{ item }">
-          <v-switch v-model="item.is_barcode_easy" color="success" hide-details
+        <template v-slot:[`item.fast_select`]="{ item }">
+          <v-switch v-model="item.fast_select" color="success" hide-details
             @change="toggleProductBarcode(item)"></v-switch>
         </template>
 
@@ -207,7 +207,7 @@
               <v-col cols="12">
                 <v-switch v-model="productForm.is_active" label="Ürün aktif" color="success" inset hide-details
                   class="mb-3"></v-switch>
-                <v-switch v-model="productForm.is_barcode_easy" label="Barkod Kolaylığı" color="success" inset
+                <v-switch v-model="productForm.fast_select" label="Hızlı Seçim" color="success" inset
                   hide-details></v-switch>
               </v-col>
             </v-row>
@@ -389,7 +389,7 @@ export default {
         description: '',
         expiry_date: null,
         is_active: true,
-        is_barcode_easy: true
+        fast_select: false
       },
 
       // Seçenekler
@@ -418,7 +418,7 @@ export default {
         { title: 'Birim', key: 'unit' },
         { title: 'Son Kullanma', key: 'expiry_date' },
         { title: 'Aktif', key: 'is_active' },
-        { title: 'Barkod Kolaylığı', key: 'is_barcode_easy' },
+        { title: 'Hızlı Seçim', key: 'fast_select' },
         { title: 'İşlemler', key: 'actions', sortable: false }
       ]
     }
@@ -618,12 +618,12 @@ export default {
         const updatedProduct = await this.$store.dispatch('apiCall', {
           url: `/api/products/${product.id}`,
           method: 'PUT',
-          data: { is_barcode_easy: product.is_barcode_easy }
+          data: { fast_select: product.fast_select }
         });
 
         this.$store.commit('UPDATE_PRODUCT', updatedProduct);
         this.$store.commit('SHOW_SNACKBAR', {
-          text: `${product.name} barkod okuma kolaylığı ${product.is_barcode_easy ? 'aktif' : 'pasif'} edildi`,
+          text: `${product.name} ${product.fast_select ? 'hızlı seçime eklendi' : 'hızlı seçimden kaldırıldı'}`,
           color: 'success'
         });
       } catch (error) {
@@ -692,7 +692,7 @@ export default {
         category: '',
         description: '',
         expiry_date: null,
-        is_active: true
+        is_active: true,
       };
     },
 

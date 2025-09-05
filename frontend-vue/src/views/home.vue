@@ -25,12 +25,37 @@
         </v-card>
 
         <v-card>
-          <v-tabs v-model="tab" bg-color="primary">
-            <v-tab value="1"><v-icon>mdi-cart</v-icon> Sepet 1</v-tab>
-            <v-tab value="2"><v-icon>mdi-cart</v-icon> Sepet 2</v-tab>
-            <v-tab value="3"><v-icon>mdi-cart</v-icon> Sepet 3</v-tab>
-            <v-tab value="4"><v-icon>mdi-cart</v-icon> Sepet 4</v-tab>
-            <v-tab value="5"><v-icon>mdi-cart</v-icon> Sepet 5</v-tab>
+          <v-tabs v-model="tab" bg-color="primary" stacked>
+            <v-tab value="1">
+              <div style="text-align: center;">
+                <div style="font-size: 0.75rem;">{{ getCartItems(1).length }} ürün - {{
+                  getCartTotal(1).toFixed(2) }} ₺</div>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+                  <v-icon>mdi-cart</v-icon>
+                  Sepet 1
+                </div>
+              </div>
+            </v-tab>
+            <v-tab value="2">
+              <div style="text-align: center;">
+                <div style="font-size: 0.75rem;">{{ getCartItems(2).length }} ürün - {{
+                  getCartTotal(2).toFixed(2) }} ₺</div>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+                  <v-icon>mdi-cart</v-icon>
+                  Sepet 2
+                </div>
+              </div>
+            </v-tab>
+            <v-tab value="3">
+              <div style="text-align: center;">
+                <div style="font-size: 0.75rem;">{{ getCartItems(3).length }} ürün - {{
+                  getCartTotal(3).toFixed(2) }} ₺</div>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+                  <v-icon>mdi-cart</v-icon>
+                  Sepet 3
+                </div>
+              </div>
+            </v-tab>
           </v-tabs>
 
           <v-card-text>
@@ -131,7 +156,7 @@
           </div>
           <div style="max-height: 45vh;">
             <div class="px-4 pb-4">
-              <grid-component :items="getHardBarcodeProducts()" isForSale
+              <grid-component :items="getFastSelectProducts()" isForSale
                 v-model:selection="selectedItems"></grid-component>
             </div>
           </div>
@@ -235,13 +260,16 @@ export default {
   },
 
   methods: {
+    getCartTotal(cartNumber) {
+      return this.$store.getters.totalCartAmount(cartNumber);
+    },
     getCartItems(cartNumber) {
       const items = this.$store.state.saleItems.filter(item => item.selectedCart === cartNumber);
       return items;
     },
-    getHardBarcodeProducts() {
+    getFastSelectProducts() {
       return this.$store.state.products
-        .filter(product => product.is_barcode_easy === false)
+        .filter(product => product.fast_select === true)
         .map((product, index) => ({
           id: product.id,
           index: index,

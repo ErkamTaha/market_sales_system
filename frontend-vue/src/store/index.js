@@ -45,6 +45,10 @@ const store = createStore({
         products: [],
         loadingProducts: false,
 
+        // Kategori verileri
+        categories: [],
+        loadingCategories: false,
+
         // Stok uyarıları
         lowStockProducts: [],
         expiredProducts: [],
@@ -79,7 +83,7 @@ const store = createStore({
                     unit: product.unit,
                     max_stock: product.current_stock,
                     barcode: product.barcode || '',
-                    category: product.category || '',
+                    category: product.category_id,
                     selectedCart: cart
                 });
             }
@@ -108,12 +112,20 @@ const store = createStore({
             state.sales = sales;
         },
 
+        SET_CATEGORIES(state, categories) {
+            state.categories = categories;
+        },
+
         SET_LOADING_PRODUCTS(state, loading) {
             state.loadingProducts = loading;
         },
 
         SET_LOADING_SALES(state, loading) {
             state.loadingSales = loading;
+        },
+
+        SET_LOADING_CATEGORIES(state, loading) {
+            state.loadingCategories = loading;
         },
 
         ADD_PRODUCT(state, product) {
@@ -129,6 +141,21 @@ const store = createStore({
 
         DELETE_PRODUCT(state, productId) {
             state.products = state.products.filter(p => p.id !== productId);
+        },
+
+        ADD_CATEGORY(state, category) {
+            state.categories.push(category);
+        },
+
+        UPDATE_CATEGORY(state, updatedCategory) {
+            const index = state.categories.findIndex(p => p.id === updatedCategory.id);
+            if (index !== -1) {
+                state.categories[index] = updatedCategory;
+            }
+        },
+
+        DELETE_CATEGORY(state, categoryId) {
+            state.categories = state.categories.filter(p => p.id !== categoryId);
         },
 
         // Stok uyarıları
@@ -223,6 +250,19 @@ const store = createStore({
             }
         },
 
+        // Ürünleri yükle
+        async loadCategories({ commit, dispatch }) {
+            commit('SET_LOADING_CATEGORIES', true);
+            try {
+                const categories = await dispatch('apiCall', { url: '/api/categories/' });
+                commit('SET_CATEGORIES', categories);
+            } catch (error) {
+                console.error('Kategoriler yüklenirken hata:', error);
+            } finally {
+                commit('SET_LOADING_CATEGORIES', false);
+            }
+        },
+
         // Stok uyarılarını yükle
         async loadStockAlerts({ commit, dispatch }) {
             try {
@@ -299,8 +339,10 @@ const store = createStore({
 
         // Kategoriler listesi
         categories: (state) => {
-            const cats = [...new Set(state.products.map(p => p.category).filter(Boolean))];
-            return cats.map(cat => ({ title: cat, value: cat }));
+            return state.categories.map(category => ({
+                title: category.name,
+                value: category.id  // Use ID instead of name
+            }));
         }
     }
 });

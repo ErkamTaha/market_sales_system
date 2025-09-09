@@ -10,7 +10,7 @@ class ProductBase(BaseModel):
     current_stock: float = 0
     critical_stock_level: float = 10
     unit: str = "adet"
-    category: Optional[str] = None
+    category_id: float
     description: Optional[str] = None
     expiry_date: Optional[date] = None
     is_active: bool = True
@@ -26,13 +26,30 @@ class ProductUpdate(BaseModel):
     current_stock: Optional[float] = None
     critical_stock_level: Optional[float] = None
     unit: Optional[str] = None
-    category: Optional[str] = None
+    category_id: Optional[float] = None
     description: Optional[str] = None
     expiry_date: Optional[date] = None
     is_active: Optional[bool] = None
     fast_select: Optional[bool] = None
 
 class Product(ProductBase):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    created_at: datetime
+
+class CategoryBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class CategoryCreate(CategoryBase):
+    pass
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+class Category(CategoryBase):
     model_config = ConfigDict(from_attributes=True)
     
     id: int

@@ -41,7 +41,7 @@
                     <v-list-item>
                         <v-list-item-title>Kritik Stok</v-list-item-title>
                         <v-list-item-subtitle>{{ product.critical_stock_level }} {{ product.unit
-                        }}</v-list-item-subtitle>
+                            }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="product.expiry_date">
                         <v-list-item-title>Son Kullanma Tarihi</v-list-item-title>
@@ -73,8 +73,7 @@ export default {
     props: {
         product: {
             type: Array,
-            default: () => [],
-            required: true
+            default: () => []
         }
     },
 

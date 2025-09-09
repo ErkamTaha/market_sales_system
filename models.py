@@ -16,7 +16,7 @@ class Product(Base):
     current_stock = Column(Float, default=0)
     critical_stock_level = Column(Float, default=10)
     unit = Column(String, default="adet")  # adet, kg, lt vb.
-    category = Column(String)
+    category_id = Column(Integer, ForeignKey("categories.id"))
     description = Column(Text)
     expiry_date = Column(Date)
     is_active = Column(Boolean, default=True)
@@ -25,6 +25,18 @@ class Product(Base):
     
     # İlişkiler
     sale_items = relationship("SaleItem", back_populates="product")
+    category = relationship("Category", back_populates="products")
+
+class Category(Base):
+    __tablename__ = "categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # İlişkiler
+    products = relationship("Product", back_populates="category")
 
 class Sale(Base):
     __tablename__ = "sales"

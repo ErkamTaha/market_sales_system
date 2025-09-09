@@ -7,9 +7,13 @@
         <p class="text-grey">Toplam {{ $store.state.products.length }} ürün</p>
       </v-col>
       <v-col cols="auto">
-        <v-btn color="primary" @click="openAddProductDialog" size="large">
+        <v-btn color="primary" @click="openAddProductDialog" size="large" class="mr-3">
           <v-icon>mdi-plus</v-icon>
           Ürün Ekle
+        </v-btn>
+        <v-btn color="primary" @click="openAddCategoryDialog" size="large">
+          <v-icon>mdi-plus</v-icon>
+          Kategori Ekle
         </v-btn>
       </v-col>
     </v-row>
@@ -74,9 +78,8 @@
               hide-details></v-select>
           </v-col>
           <v-col cols="12" md="2">
-            <v-btn color="secondary" block @click="resetFilters">
-              <v-icon>mdi-eraser</v-icon>
-              Temizle
+            <v-btn color="secondary" style="font-size: 0.75rem;" block @click="resetFilters">
+              Filtreleri Temizle
             </v-btn>
           </v-col>
         </v-row>
@@ -157,6 +160,35 @@
       </v-data-table>
     </v-card>
 
+    <!-- Kategori Ekleme/Düzenleme Modal -->
+    <v-dialog v-model="showAddCategory" max-width="800">
+      <v-card>
+        <v-card-title class="bg-primary text-white">
+          {{ editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori Ekle' }}
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <v-form ref="categoryForm" v-model="formValid">
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="categoryForm.name" label="Kategori Adı *"
+                  :rules="[v => !!v || 'Kategori adı gerekli']" required></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-textarea v-model="categoryForm.description" label="Açıklama" rows="2"></v-textarea>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-card-text>
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn @click="cancelCategoryEdit" variant="outlined">İptal</v-btn>
+          <v-btn color="primary" @click="saveCategory" :loading="savingCategory">
+            {{ editingCategory ? 'Güncelle' : 'Kaydet' }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Ürün Ekleme/Düzenleme Modal -->
     <v-dialog v-model="showAddProduct" max-width="800">
       <v-card>
@@ -174,10 +206,12 @@
                   required></v-text-field>
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field v-model="productForm.barcode" label="Barkod"></v-text-field>
+                <v-text-field v-model="productForm.barcode" @input="handleBarcodeInput" type="tel"
+                  label="Barkod"></v-text-field>
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field v-model="productForm.category" label="Kategori"></v-text-field>
+                <v-select v-model="productForm.category_id" :items="$store.getters.categories" label="Kategori"
+                  clearable hide-details></v-select>
               </v-col>
               <v-col cols="12" md="6">
                 <v-select v-model="productForm.unit" :items="unitOptions" label="Birim"></v-select>
@@ -245,8 +279,8 @@
             <v-radio label="Stok Çıkar" value="remove" color="warning"></v-radio>
             <v-radio label="Stok Ayarla" value="set" color="info"></v-radio>
           </v-radio-group>
-          <v-text-field v-model="stockUpdateAmount" :label="getStockUpdateLabel()" type="number" step="0.1" min="0"
-            :suffix="selectedProductForStock.unit"></v-text-field>
+          <v-text-field v-model="stockUpdateAmount" :label="getStockUpdateLabel()" type="number"
+            :step="selectedProductForStock.unit" min="0" :suffix="selectedProductForStock.unit"></v-text-field>
           <v-alert v-if="stockUpdateAmount && stockUpdateType !== 'set'"
             :type="stockUpdateType === 'add' ? 'success' : 'warning'" variant="tonal">
             Yeni Stok: {{ calculateNewStock() }} {{ selectedProductForStock.unit }}
@@ -352,12 +386,14 @@ export default {
       selectedCard: 0,
       // Arama ve filtreler
       productSearch: '',
-      categoryFilter: '',
+      categoryFilter: null,
       stockFilter: '',
 
       // Modal durumları
       showAddProduct: false,
+      showAddCategory: false,
       showProductDetail: false,
+      showCategoryDetail: false,
       showStockUpdate: false,
       showDeleteConfirm: false,
 
@@ -365,19 +401,23 @@ export default {
       editingProduct: false,
       savingProduct: false,
       deletingProduct: false,
+      editingCategory: false,
+      savingCategory: false,
+      deletingCategory: false,
       updatingStock: false,
       formValid: false,
 
       // Seçili öğeler
       selectedProduct: null,
       productToDelete: null,
+      categoryToDelete: null,
       selectedProductForStock: null,
 
       // Stok güncelleme
       stockUpdateType: 'add',
       stockUpdateAmount: '',
 
-      // Form verileri
+      // Product Form verileri
       productForm: {
         name: '',
         barcode: '',
@@ -385,11 +425,17 @@ export default {
         current_stock: 0,
         critical_stock_level: 10,
         unit: 'adet',
-        category: '',
+        category_id: null,
         description: '',
         expiry_date: null,
         is_active: true,
         fast_select: false
+      },
+
+      // Category Form verileri
+      categoryForm: {
+        name: '',
+        description: ''
       },
 
       // Seçenekler
@@ -416,7 +462,7 @@ export default {
         { title: 'Fiyat', key: 'price' },
         { title: 'Stok', key: 'current_stock' },
         { title: 'Birim', key: 'unit' },
-        { title: 'Son Kullanma', key: 'expiry_date' },
+        { title: 'Son Kullanma Tarihi', key: 'expiry_date' },
         { title: 'Aktif', key: 'is_active' },
         { title: 'Hızlı Seçim', key: 'fast_select' },
         { title: 'İşlemler', key: 'actions', sortable: false }
@@ -488,9 +534,19 @@ export default {
     if (this.$store.state.lowStockProducts.length === 0) {
       await this.$store.dispatch('loadStockAlerts');
     }
+    if (this.$store.state.categories.length === 0) {
+      await this.$store.dispatch('loadCategories');
+    }
   },
 
   methods: {
+    handleBarcodeInput(event) {
+      const value = event.target.value;
+      if (value) {
+        const numericValue = value.replace(/\D/g, '');
+        this.productForm.barcode = numericValue.slice(0, 13);
+      }
+    },
     getCardClass(cardIndex) {
       return {
         'card-selected': this.selectedCard === cardIndex,
@@ -507,13 +563,29 @@ export default {
       this.showAddProduct = true;
     },
 
+    openAddCategoryDialog() {
+      this.editingCategory = false;
+      this.resetProductForm();
+      this.showAddCategory = true;
+    },
+
     viewProduct(product) {
       this.selectedProduct = product;
       this.showProductDetail = true;
     },
 
+    viewCategory(category) {
+      this.selectedCategory = category;
+      this.showCategoryDetail = true;
+    },
+
     confirmDeleteProduct(product) {
       this.productToDelete = product;
+      this.showDeleteConfirm = true;
+    },
+
+    confirmDeleteCategory(category) {
+      this.categoryToDelete = category;
       this.showDeleteConfirm = true;
     },
 
@@ -632,6 +704,69 @@ export default {
       }
     },
 
+    // Kategori işlemleri
+    async saveCategory() {
+      this.savingCategory = true;
+      try {
+        const categoryData = { ...this.categoryForm };
+
+        if (this.editingCategory) {
+          const updatedCategory = await this.$store.dispatch('apiCall', {
+            url: `/api/products/${this.editingCategory.id}`,
+            method: 'PUT',
+            data: categoryData
+          });
+          this.$store.commit('UPDATE_CATEGORY', updatedCategory);
+          this.$store.commit('SHOW_SNACKBAR', { text: 'Kategori başarıyla güncellendi', color: 'success' });
+        } else {
+          const newCategory = await this.$store.dispatch('apiCall', {
+            url: '/api/categories/',
+            method: 'POST',
+            data: categoryData
+          });
+          this.$store.commit('ADD_PRODUCT', newCategory);
+          this.$store.commit('SHOW_SNACKBAR', { text: 'Kategori başarıyla eklendi', color: 'success' });
+        }
+
+        this.cancelCategoryEdit();
+
+      } catch (error) {
+        console.error('Kategori kaydedilirken hata:', error);
+        this.$store.commit('SHOW_SNACKBAR', { text: 'Kategori kaydedilemedi', color: 'error' });
+      } finally {
+        this.savingCategory = false;
+      }
+    },
+
+    editCategory(category) {
+      this.editingCategory = category;
+      this.categoryForm = { ...category };
+      this.showAddCategory = true;
+      this.showCategoryDetail = false;
+    },
+
+    async deleteCategory() {
+      if (!this.categoryToDelete) return;
+
+      this.deletingCategory = true;
+      try {
+        await this.$store.dispatch('apiCall', {
+          url: `/api/categories/${this.categoryToDelete.id}`,
+          method: 'DELETE'
+        });
+
+        this.$store.commit('DELETE_CATEGORY', this.categoryToDelete.id);
+        this.$store.commit('SHOW_SNACKBAR', { text: 'Kategori başarıyla silindi', color: 'success' });
+        this.showDeleteConfirm = false;
+        this.categoryToDelete = null;
+      } catch (error) {
+        console.error('Kategori silinirken hata:', error);
+        this.$store.commit('SHOW_SNACKBAR', { text: 'Kategori silinemedi', color: 'error' });
+      } finally {
+        this.deletingCategory = false;
+      }
+    },
+
     // Stok güncelleme
     getStockUpdateLabel() {
       switch (this.stockUpdateType) {
@@ -696,10 +831,23 @@ export default {
       };
     },
 
+    resetCategoryForm() {
+      this.categoryForm = {
+        name: '',
+        description: ''
+      };
+    },
+
     cancelProductEdit() {
       this.showAddProduct = false;
       this.editingProduct = false;
       this.resetProductForm();
+    },
+
+    cancelCategoryEdit() {
+      this.showAddCategory = false;
+      this.editingCategory = false;
+      this.resetCategoryForm();
     },
 
     resetFilters() {

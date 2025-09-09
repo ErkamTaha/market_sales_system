@@ -125,6 +125,60 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Ürün başarıyla silindi"}
 
+# KATEGORİ YÖNETİMİ
+@app.post("/api/categories/", response_model=schemas.Category)
+def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
+    """Yeni kategori ekle"""
+    try:
+        logger.info(f"Creating category: {category.model_dump()}")
+        db_category = models.Category(**category.model_dump())
+        db.add(db_category)
+        db.commit()
+        db.refresh(db_category)
+        logger.info(f"category created with ID: {db_category.id}")
+        return db_category
+    except Exception as e:
+        logger.error(f"Error creating category: {e}")
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Kategori oluşturulurken hata: {str(e)}")
+    
+@app.get("/api/categories/", response_model=List[schemas.Category])
+def get_categories(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Tüm kategorileri listele"""
+    try:
+        logger.info(f"Getting categories with skip={skip}, limit={limit}")
+        categories = db.query(models.Category).offset(skip).limit(limit).all()
+        logger.info(f"Found {len(categories)} categories")
+        return categories
+    except Exception as e:
+        logger.error(f"Error getting categories: {e}")
+        raise HTTPException(status_code=500, detail=f"Kategoriler alınırken hata: {str(e)}")
+
+@app.put("/api/categories/{category_id}", response_model=schemas.Category)
+def update_category(category_id: int, category_update: schemas.CategoryUpdate, db: Session = Depends(get_db)):
+    """Kategori güncelle"""
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+    
+    for key, value in category_update.model_dump(exclude_unset=True).items():
+        setattr(category, key, value)
+    
+    db.commit()
+    db.refresh(category)
+    return category
+
+@app.delete("/api/categories/{category_id}")
+def delete_category(category_id: int, db: Session = Depends(get_db)):
+    """Kategori sil"""
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+    
+    db.delete(category)
+    db.commit()
+    return {"message": "Kategori başarıyla silindi"}
+
 # STOK YÖNETİMİ
 @app.get("/api/products/low-stock/")
 def get_low_stock_products(db: Session = Depends(get_db)):

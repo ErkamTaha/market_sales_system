@@ -11,8 +11,8 @@
           <v-card-text>
             <v-row>
               <v-col cols="12" md="6">
-                <v-text-field v-model="barcodeInput" label="Barkod" class="barcode-input" @keyup.enter="scanBarcode"
-                  autofocus>
+                <v-text-field v-model="barcodeInput" @input="handleBarcodeInput" type="tel" label="Barkod"
+                  class="barcode-input" @keyup.enter="scanBarcode" autofocus>
                 </v-text-field>
               </v-col>
               <v-col cols="12" md="6">
@@ -251,6 +251,7 @@ export default {
   async mounted() {
     await this.$store.dispatch('loadProducts');
     await this.$store.dispatch('loadStockAlerts');
+    await this.$store.dispatch('loadCategories');
   },
   computed: {
     currentCartTotal() {
@@ -260,6 +261,13 @@ export default {
   },
 
   methods: {
+    handleBarcodeInput(event) {
+      const value = event.target.value;
+      if (value) {
+        const numericValue = value.replace(/\D/g, '');
+        this.barcodeInput = numericValue.slice(0, 13);
+      }
+    },
     getCartTotal(cartNumber) {
       return this.$store.getters.totalCartAmount(cartNumber);
     },

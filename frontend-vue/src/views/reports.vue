@@ -23,8 +23,8 @@
           <v-col cols="12" md="7">
           </v-col>
           <v-col cols="12" md="2">
-            <v-btn color="secondary" block @click="resetFilters">
-              Temizle
+            <v-btn color="secondary" style="font-size: 0.75rem;" block @click="resetFilters">
+              Filtreleri Temizle
             </v-btn>
           </v-col>
         </v-row>

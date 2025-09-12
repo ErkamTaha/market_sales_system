@@ -1,19 +1,69 @@
 <template>
   <v-container>
+    <v-row class="mb-4 justify-space-between align-center">
+      <v-col>
+        <h2>Kategori Yönetimi</h2>
+        <p class="text-grey">Toplam {{ $store.state.categories.length }} kategori</p>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn color="primary" @click="openAddCategoryDialog" size="large">
+          <v-icon>mdi-plus</v-icon>
+          Kategori Ekle
+        </v-btn>
+      </v-col>
+    </v-row>
+    <!-- Kategori Tablosu -->
+    <v-card class="mb-4">
+      <v-card-title class="d-flex align-center">
+        Kategori Listesi
+        <v-spacer></v-spacer>
+        <v-chip color="primary">{{ $store.state.categories.length }} kategori</v-chip>
+      </v-card-title>
+      <v-data-table :headers="categoryHeaders" :items="$store.state.categories"
+        :loading="$store.state.loadingCategories" :items-per-page="5" item-value="id">
+        <template v-slot:[`item.name`]="{ item }">
+          <div class="d-flex align-center">
+            <v-avatar size="40" class="mr-3">📦</v-avatar>
+            <div class="font-weight-medium">{{ item.name }}</div>
+          </div>
+        </template>
+
+        <template v-slot:[`item.is_active`]="{ item }">
+          <v-switch v-model="item.is_active" color="success" hide-details
+            @change="toggleCategoryActiveness(item)"></v-switch>
+        </template>
+
+        <template v-slot:[`item.actions`]="{ item }">
+          <div class="d-flex">
+            <v-btn size="small" color="primary" @click="editCategory(item)" class="mr-1 custom-btn">
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn size="small" color="error" @click="confirmDeleteCategory(item)" class="custom-btn">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </div>
+        </template>
+
+        <template v-slot:[`no-data`]>
+          <div class="text-center py-8">
+            <p class="text-grey mt-4">Hiç kategori bulunamadı</p>
+            <v-btn color="primary" @click="openAddCategoryDialog">
+              İlk kategoriyi ekle
+            </v-btn>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
     <!-- Başlık ve İstatistikler -->
-    <v-row class="mb-4">
+    <v-row class="mb-4 justify-space-between align-center">
       <v-col>
         <h2>Ürün Yönetimi</h2>
         <p class="text-grey">Toplam {{ $store.state.products.length }} ürün</p>
       </v-col>
       <v-col cols="auto">
-        <v-btn color="primary" @click="openAddProductDialog" size="large" class="mr-3">
+        <v-btn color="primary" @click="openAddProductDialog" size="large">
           <v-icon>mdi-plus</v-icon>
           Ürün Ekle
-        </v-btn>
-        <v-btn color="primary" @click="openAddCategoryDialog" size="large">
-          <v-icon>mdi-plus</v-icon>
-          Kategori Ekle
         </v-btn>
       </v-col>
     </v-row>
@@ -100,7 +150,10 @@
             <v-avatar size="40" class="mr-3">📦</v-avatar>
             <div>
               <div class="font-weight-medium">{{ item.name }}</div>
-              <div class="text-caption text-grey">{{ item.category || 'Kategorisiz' }}</div>
+              <div class="text-caption text-grey">{{ categoryNameById(item.category_id) ||
+                'Kategorisiz'
+                }}
+              </div>
             </div>
           </div>
         </template>
@@ -134,9 +187,6 @@
 
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex">
-            <v-btn size="small" color="info" @click="viewProduct(item)" class="mr-1 custom-btn">
-              <v-icon>mdi-eye</v-icon>
-            </v-btn>
             <v-btn size="small" color="primary" @click="editProduct(item)" class="mr-1 custom-btn">
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
@@ -466,6 +516,14 @@ export default {
         { title: 'Aktif', key: 'is_active' },
         { title: 'Hızlı Seçim', key: 'fast_select' },
         { title: 'İşlemler', key: 'actions', sortable: false }
+      ],
+
+      categoryHeaders: [
+        { title: 'ID', key: 'id', width: '80px' },
+        { title: 'Ürün', key: 'name' },
+        { title: 'Açıklama', key: 'description' },
+        { title: 'Aktif', key: 'is_active' },
+        { title: 'İşlemler', key: 'actions', sortable: false }
       ]
     }
   },
@@ -528,18 +586,23 @@ export default {
 
   async mounted() {
     // Ürünleri ve stok uyarılarını yükle
+    if (this.$store.state.categories.length === 0) {
+      await this.$store.dispatch('loadCategories');
+    }
     if (this.$store.state.products.length === 0) {
       await this.$store.dispatch('loadProducts');
     }
     if (this.$store.state.lowStockProducts.length === 0) {
       await this.$store.dispatch('loadStockAlerts');
     }
-    if (this.$store.state.categories.length === 0) {
-      await this.$store.dispatch('loadCategories');
-    }
   },
 
   methods: {
+    categoryNameById(id) {
+      const categories = this.$store.getters.categories;
+      const title = categories.find(category => category.value === id)?.title || 'Not Found';
+      return title;
+    },
     handleBarcodeInput(event) {
       const value = event.target.value;
       if (value) {
@@ -567,16 +630,6 @@ export default {
       this.editingCategory = false;
       this.resetProductForm();
       this.showAddCategory = true;
-    },
-
-    viewProduct(product) {
-      this.selectedProduct = product;
-      this.showProductDetail = true;
-    },
-
-    viewCategory(category) {
-      this.selectedCategory = category;
-      this.showCategoryDetail = true;
     },
 
     confirmDeleteProduct(product) {
@@ -682,6 +735,25 @@ export default {
       } catch (error) {
         console.error('Ürün durumu güncellenirken hata:', error);
         product.is_active = !product.is_active; // Geri al
+      }
+    },
+
+    async toggleCategoryActiveness(category) {
+      try {
+        const updatedCategory = await this.$store.dispatch('apiCall', {
+          url: `/api/categories/${category.id}`,
+          method: 'PUT',
+          data: { is_active: category.is_active }
+        });
+
+        this.$store.commit('UPDATE_CATEGORY', updatedCategory);
+        this.$store.commit('SHOW_SNACKBAR', {
+          text: `${category.name} ${category.is_active ? 'aktif' : 'pasif'} edildi`,
+          color: 'success'
+        });
+      } catch (error) {
+        console.error('Kategori durumu güncellenirken hata:', error);
+        category.is_active = !category.is_active; // Geri al
       }
     },
 

@@ -41,6 +41,7 @@ class Product(ProductBase):
 class CategoryBase(BaseModel):
     name: str
     description: Optional[str] = None
+    is_active: bool = True
 
 class CategoryCreate(CategoryBase):
     pass
@@ -48,6 +49,7 @@ class CategoryCreate(CategoryBase):
 class CategoryUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class Category(CategoryBase):
     model_config = ConfigDict(from_attributes=True)

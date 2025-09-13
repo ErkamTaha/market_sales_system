@@ -2,11 +2,24 @@
     <v-dialog max-width="600" :z-index="1001">
         <v-card v-if="product">
             <v-card-title class="bg-info text-white">
-                Ürün Detayları
+                <v-row>
+                    <v-col>
+                        Ürün Detayları
+                    </v-col>
+                    <v-spacer></v-spacer>
+                    <v-tooltip text="Close" location="top">
+                        <template v-slot:activator="{ props }">
+                            <v-btn v-bind="props" size="medium" variant="text" @click="closeDetails"
+                                class="mr-1 custom-btn">
+                                <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                        </template>
+                    </v-tooltip>
+                </v-row>
             </v-card-title>
             <v-card-text class="pa-6">
                 <div class="text-center mb-4">
-                    <v-avatar size="80" color="primary">📦</v-avatar>
+                    <v-icon size="80">mdi-image-area</v-icon>
                     <h2 class="mt-3">{{ product.name }}</h2>
                     <v-chip :color="product.is_active ? 'success' : 'error'">
                         {{ product.is_active ? 'Aktif' : 'Pasif' }}
@@ -78,6 +91,9 @@ export default {
     },
 
     methods: {
+        closeDetails() {
+            this.$emit('closeDialog');
+        },
         formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);

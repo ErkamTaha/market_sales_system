@@ -82,6 +82,23 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error getting product {product_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Ürün alınırken hata: {str(e)}")
+    
+@app.get("/api/products/category_id/{category_id}", response_model=List[schemas.Product])
+def get_products_by_category(category_id: int, db: Session = Depends(get_db)):
+    """Kategori ile ürünleri getir"""
+    try:
+        logger.info(f"Getting products with category_id: {category_id}")
+        products = db.query(models.Product).filter(models.Product.category_id == category_id)
+        if not products:
+            logger.warning(f"Products not found with category_id: {category_id}")
+            raise HTTPException(status_code=404, detail=f"Kategori '{category_id}' ile ürün bulunamadı")
+        logger.info(f"Found products with category_id: {category_id}")
+        return products
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting products by category_id {category_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Kategori ile ürün aranırken hata: {str(e)}")
 
 @app.get("/api/products/barcode/{barcode}", response_model=schemas.Product)
 def get_product_by_barcode(barcode: str, db: Session = Depends(get_db)):

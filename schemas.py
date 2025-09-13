@@ -10,7 +10,7 @@ class ProductBase(BaseModel):
     current_stock: float = 0
     critical_stock_level: float = 10
     unit: str = "adet"
-    category_id: float
+    category_id: Optional[float] = None
     description: Optional[str] = None
     expiry_date: Optional[date] = None
     is_active: bool = True

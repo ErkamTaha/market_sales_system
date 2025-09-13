@@ -6,7 +6,7 @@
         <p class="text-grey">Toplam {{ $store.state.categories.length }} kategori</p>
       </v-col>
       <v-col cols="auto">
-        <v-btn color="primary" @click="openAddCategoryDialog" size="large">
+        <v-btn color="primary" variant="flat" @click="openAddCategoryDialog" size="large">
           <v-icon>mdi-plus</v-icon>
           Kategori Ekle
         </v-btn>
@@ -23,7 +23,7 @@
         :loading="$store.state.loadingCategories" :items-per-page="5" item-value="id">
         <template v-slot:[`item.name`]="{ item }">
           <div class="d-flex align-center">
-            <v-avatar size="40" class="mr-3">📦</v-avatar>
+            <v-icon class="mr-2">mdi-image-area</v-icon>
             <div class="font-weight-medium">{{ item.name }}</div>
           </div>
         </template>
@@ -35,20 +35,30 @@
 
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex">
-            <v-btn size="small" color="primary" @click="editCategory(item)" class="mr-1 custom-btn">
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn size="small" color="error" @click="confirmDeleteCategory(item)" class="custom-btn">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <v-tooltip text="Edit Category" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn size="small" v-bind="props" variant="flat" color="primary" @click="editCategory(item)"
+                  class="mr-1 custom-btn">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+            <v-tooltip text="Delete Category" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn size="small" v-bind="props" variant="flat" color="error" @click="confirmDeleteCategory(item)"
+                  class="custom-btn">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
           </div>
         </template>
 
         <template v-slot:[`no-data`]>
           <div class="text-center py-8">
             <p class="text-grey mt-4">Hiç kategori bulunamadı</p>
-            <v-btn color="primary" @click="openAddCategoryDialog">
-              İlk kategoriyi ekle
+            <v-btn color="primary" variant="flat" @click="openAddCategoryDialog">
+              İlk Kategoriyi Ekle
             </v-btn>
           </div>
         </template>
@@ -61,7 +71,7 @@
         <p class="text-grey">Toplam {{ $store.state.products.length }} ürün</p>
       </v-col>
       <v-col cols="auto">
-        <v-btn color="primary" @click="openAddProductDialog" size="large">
+        <v-btn color="primary" variant="flat" @click="openAddProductDialog" size="large">
           <v-icon>mdi-plus</v-icon>
           Ürün Ekle
         </v-btn>
@@ -147,12 +157,12 @@
         :items-per-page="10" item-value="id">
         <template v-slot:[`item.name`]="{ item }">
           <div class="d-flex align-center">
-            <v-avatar size="40" class="mr-3">📦</v-avatar>
+            <v-icon class="mr-2">mdi-image-area</v-icon>
             <div>
               <div class="font-weight-medium">{{ item.name }}</div>
               <div class="text-caption text-grey">{{ categoryNameById(item.category_id) ||
                 'Kategorisiz'
-                }}
+              }}
               </div>
             </div>
           </div>
@@ -187,15 +197,32 @@
 
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex">
-            <v-btn size="small" color="primary" @click="editProduct(item)" class="mr-1 custom-btn">
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn size="small" color="success" @click="openStockUpdateDialog(item)" class="mr-1 custom-btn">
-              <v-icon>mdi-box-shadow</v-icon>
-            </v-btn>
-            <v-btn size="small" color="error" @click="confirmDeleteProduct(item)" class="custom-btn">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <v-tooltip text="Edit Product" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="small" variant="flat" color="primary" @click="editProduct(item)"
+                  class="mr-1 custom-btn">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Update Stock" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="small" variant="flat" color="success" @click="openStockUpdateDialog(item)"
+                  class="mr-1 custom-btn">
+                  <v-icon>mdi-box-shadow</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Delete Product" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="small" variant="flat" color="error" @click="confirmDeleteProduct(item)"
+                  class="custom-btn">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
           </div>
         </template>
 
@@ -214,7 +241,19 @@
     <v-dialog v-model="showAddCategory" max-width="800">
       <v-card>
         <v-card-title class="bg-primary text-white">
-          {{ editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori Ekle' }}
+          <v-row>
+            <v-col>
+              {{ editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori Ekle' }}
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-tooltip text="Close" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="medium" variant="text" @click="cancelCategoryEdit" class="mr-1 custom-btn">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </v-row>
         </v-card-title>
         <v-card-text class="pa-6">
           <v-form ref="categoryForm" v-model="formValid">
@@ -231,8 +270,8 @@
         </v-card-text>
         <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
-          <v-btn @click="cancelCategoryEdit" variant="outlined">İptal</v-btn>
-          <v-btn color="primary" @click="saveCategory" :loading="savingCategory">
+          <v-btn @click="cancelCategoryEdit">İptal</v-btn>
+          <v-btn color="primary" variant="outlined" @click="saveCategory" :loading="savingCategory">
             {{ editingCategory ? 'Güncelle' : 'Kaydet' }}
           </v-btn>
         </v-card-actions>
@@ -243,7 +282,19 @@
     <v-dialog v-model="showAddProduct" max-width="800">
       <v-card>
         <v-card-title class="bg-primary text-white">
-          {{ editingProduct ? 'Ürün Düzenle' : 'Yeni Ürün Ekle' }}
+          <v-row>
+            <v-col>
+              {{ editingProduct ? 'Ürün Düzenle' : 'Yeni Ürün Ekle' }}
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-tooltip text="Close" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="medium" variant="text" @click="cancelProductEdit" class="mr-1 custom-btn">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </v-row>
         </v-card-title>
         <v-card-text class="pa-6">
           <v-form ref="productForm" v-model="formValid">
@@ -299,8 +350,8 @@
         </v-card-text>
         <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
-          <v-btn @click="cancelProductEdit" variant="outlined">İptal</v-btn>
-          <v-btn color="primary" @click="saveProduct" :loading="savingProduct">
+          <v-btn @click="cancelProductEdit">İptal</v-btn>
+          <v-btn color="primary" variant="outlined" @click="saveProduct" :loading="savingProduct">
             {{ editingProduct ? 'Güncelle' : 'Kaydet' }}
           </v-btn>
         </v-card-actions>
@@ -316,7 +367,20 @@
     <v-dialog v-model="showStockUpdate" max-width="400">
       <v-card>
         <v-card-title class="bg-success text-white">
-          Stok Güncelle
+          <v-row>
+            <v-col>
+              Stok Güncelle
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-tooltip text="Close" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="medium" variant="text" @click="showStockUpdate = false"
+                  class="mr-1 custom-btn">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </v-row>
         </v-card-title>
         <v-card-text class="pa-6" v-if="selectedProductForStock">
           <div class="text-center mb-4">
@@ -330,7 +394,8 @@
             <v-radio label="Stok Ayarla" value="set" color="info"></v-radio>
           </v-radio-group>
           <v-text-field v-model="stockUpdateAmount" :label="getStockUpdateLabel()" type="number"
-            :step="selectedProductForStock.unit" min="0" :suffix="selectedProductForStock.unit"></v-text-field>
+            :step="selectedProductForStock.unit === 'adet' ? 1 : 0.1" min="0"
+            :suffix="selectedProductForStock.unit"></v-text-field>
           <v-alert v-if="stockUpdateAmount && stockUpdateType !== 'set'"
             :type="stockUpdateType === 'add' ? 'success' : 'warning'" variant="tonal">
             Yeni Stok: {{ calculateNewStock() }} {{ selectedProductForStock.unit }}
@@ -338,8 +403,9 @@
         </v-card-text>
         <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
-          <v-btn @click="showStockUpdate = false" variant="outlined">İptal</v-btn>
-          <v-btn color="success" @click="updateStock" :loading="updatingStock" :disabled="!stockUpdateAmount">
+          <v-btn @click="showStockUpdate = false">İptal</v-btn>
+          <v-btn color="success" variant="outlined" @click="updateStock" :loading="updatingStock"
+            :disabled="!stockUpdateAmount">
             Güncelle
           </v-btn>
         </v-card-actions>
@@ -347,10 +413,23 @@
     </v-dialog>
 
     <!-- Silme Onay Modal -->
-    <v-dialog v-model="showDeleteConfirm" max-width="400">
+    <v-dialog v-model="showDeleteConfirm" @afterLeave="clearDeleteData" max-width="400">
       <v-card>
         <v-card-title class="bg-error text-white">
-          Ürün Sil
+          <v-row>
+            <v-col>
+              {{ productToDelete ? "Ürünü Sil" : "Kategoriyi Sil" }}
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-tooltip text="Close" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="medium" variant="text" @click="showDeleteConfirm = false"
+                  class="mr-1 custom-btn">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </v-row>
         </v-card-title>
         <v-card-text class="pa-6" v-if="productToDelete">
           <div class="text-center">
@@ -361,10 +440,19 @@
             </v-alert>
           </div>
         </v-card-text>
+        <v-card-text class="pa-6" v-if="categoryToDelete">
+          <div class="text-center">
+            <h3 class="mt-3">Bu kategoriyi silmek istediğinizden emin misiniz?</h3>
+            <p class="text-grey mt-2">{{ categoryToDelete.name }}</p>
+            <v-alert type="warning" variant="tonal" class="mt-4">
+              Bu işlem geri alınamaz!
+            </v-alert>
+          </div>
+        </v-card-text>
         <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
-          <v-btn @click="showDeleteConfirm = false" variant="outlined">İptal</v-btn>
-          <v-btn color="error" @click="deleteProduct" :loading="deletingProduct">
+          <v-btn @click="showDeleteConfirm = false">İptal</v-btn>
+          <v-btn color="error" variant="outlined" @click="deleteCategory" :loading="deletingCategory">
             Sil
           </v-btn>
         </v-card-actions>
@@ -428,6 +516,7 @@
 </style>
 
 <script>
+
 export default {
   name: 'ProductsComponent',
 
@@ -520,7 +609,7 @@ export default {
 
       categoryHeaders: [
         { title: 'ID', key: 'id', width: '80px' },
-        { title: 'Ürün', key: 'name' },
+        { title: 'Kategori', key: 'name' },
         { title: 'Açıklama', key: 'description' },
         { title: 'Aktif', key: 'is_active' },
         { title: 'İşlemler', key: 'actions', sortable: false }
@@ -560,7 +649,7 @@ export default {
 
       // Kategori filtresi
       if (this.categoryFilter) {
-        filtered = filtered.filter(product => product.category === this.categoryFilter);
+        filtered = filtered.filter(product => product.category_id === this.categoryFilter);
       }
 
       // Stok filtresi
@@ -598,6 +687,10 @@ export default {
   },
 
   methods: {
+    clearDeleteData() {
+      this.productToDelete = null;
+      this.categoryToDelete = null;
+    },
     categoryNameById(id) {
       const categories = this.$store.getters.categories;
       const title = categories.find(category => category.value === id)?.title || 'Not Found';
@@ -745,7 +838,18 @@ export default {
           method: 'PUT',
           data: { is_active: category.is_active }
         });
-
+        const productsToUpdate = await this.$store.dispatch('apiCall', {
+          url: `/api/products/category_id/${category.id}`,
+          method: 'GET'
+        })
+        for (const product of productsToUpdate) {
+          const updatedProduct = await this.$store.dispatch('apiCall', {
+            url: `/api/products/${product.id}`,
+            method: 'PUT',
+            data: { is_active: category.is_active }
+          });
+          this.$store.commit('UPDATE_PRODUCT', updatedProduct);
+        }
         this.$store.commit('UPDATE_CATEGORY', updatedCategory);
         this.$store.commit('SHOW_SNACKBAR', {
           text: `${category.name} ${category.is_active ? 'aktif' : 'pasif'} edildi`,
@@ -796,7 +900,7 @@ export default {
             method: 'POST',
             data: categoryData
           });
-          this.$store.commit('ADD_PRODUCT', newCategory);
+          this.$store.commit('ADD_CATEGORY', newCategory);
           this.$store.commit('SHOW_SNACKBAR', { text: 'Kategori başarıyla eklendi', color: 'success' });
         }
 
@@ -828,6 +932,7 @@ export default {
         });
 
         this.$store.commit('DELETE_CATEGORY', this.categoryToDelete.id);
+        await this.$store.dispatch('loadProducts');
         this.$store.commit('SHOW_SNACKBAR', { text: 'Kategori başarıyla silindi', color: 'success' });
         this.showDeleteConfirm = false;
         this.categoryToDelete = null;

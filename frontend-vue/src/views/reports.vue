@@ -54,7 +54,20 @@
     <v-dialog v-model="showSaleDetail" max-width="600" :z-index="1000">
       <v-card v-if="selectedSale">
         <v-card-title class="bg-info text-white">
-          Satış Detayları
+          <v-row>
+            <v-col>
+              Satış Detayları
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-tooltip text="Close" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="medium" variant="text" @click="showSaleDetail = false"
+                  class="mr-1 custom-btn">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </v-row>
         </v-card-title>
         <v-card-text class="pa-6">
           <v-list>
@@ -78,7 +91,8 @@
       </v-card>
     </v-dialog>
 
-    <product-detail-component v-model="showProductDetail" :product="productToDisplay">
+    <product-detail-component v-model="showProductDetail" @closeDialog="showProductDetail = false"
+      :product="productToDisplay">
 
     </product-detail-component>
   </v-container>

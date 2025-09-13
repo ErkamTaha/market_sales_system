@@ -1,29 +1,31 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col cols="12" md="8">
-        <!-- Barkod Okuma Kartı -->
-        <v-card class="mb-4">
+    <v-row class="mt-4">
+      <!-- Barkod Okuma Kartı -->
+      <v-col cols="12" md="5">
+        <v-card>
           <v-card-title>
             <v-icon>mdi-barcode</v-icon>
             Barkod Okuma
           </v-card-title>
           <v-card-text>
-            <v-row>
-              <v-col cols="12" md="6">
+            <v-row class="align-center">
+              <v-col>
                 <v-text-field v-model="barcodeInput" @input="handleBarcodeInput" type="tel" label="Barkod"
                   class="barcode-input" @keyup.enter="scanBarcode" autofocus>
                 </v-text-field>
               </v-col>
-              <v-col cols="12" md="6">
-                <v-btn color="primary" @click="scanBarcode" :loading="scanning" class="mr-2">
+              <v-col cols="auto" class="pl-2">
+                <v-btn color="primary" variant="tonal" block @click="scanBarcode" :loading="scanning">
                   Barkodu Okut
                 </v-btn>
               </v-col>
             </v-row>
           </v-card-text>
         </v-card>
+      </v-col>
 
+      <v-col cols="12" md="7">
         <v-card>
           <v-tabs v-model="tab" bg-color="primary" stacked>
             <v-tab value="1">
@@ -62,20 +64,14 @@
             <v-tabs-window v-model="tab">
               <v-tabs-window-item v-for="cartNumber in [1, 2, 3, 4, 5]" :key="cartNumber"
                 :value="cartNumber.toString()">
-                <v-btn color="secondary" @click="showManualProduct = true">
-                  <v-icon>mdi-plus</v-icon> Manuel Ekle
-                </v-btn>
-                <div v-if="getCartItems(cartNumber).length === 0" class="text-center py-8">
-                  <p class="text-grey mt-4">Sepet boş</p>
+                <div v-if="getCartItems(cartNumber).length === 0" class="text-center py-4">
+                  <p class="text-grey">Sepet boş</p>
                 </div>
                 <v-list v-else>
-                  <div class="mb-4">
-                    {{ getCartItems(cartNumber).length }} ürün
-                  </div>
                   <v-list-item v-for="(item, index) in getCartItems(cartNumber)" :key="`${cartNumber}-${index}`"
                     class="sale-item-card mb-2">
                     <template v-slot:prepend>
-                      <v-avatar color="primary">📦</v-avatar>
+                      <v-icon size="40" style="opacity: 100;">mdi-image-area</v-icon>
                     </template>
                     <v-list-item-title>{{ item.name }}</v-list-item-title>
                     <v-list-item-subtitle>
@@ -108,30 +104,24 @@
                     </template>
                   </v-list-item>
                 </v-list>
+                <v-row class="my-2 align-center">
+                  <v-btn color="secondary" variant="tonal" class="ml-4 mr-2" @click="showManualProduct = true">
+                    <v-icon>mdi-plus</v-icon> Ürün Ekle
+                  </v-btn>
+                  <v-btn color="error" variant="tonal" class="mr-2" @click="clearCart"
+                    :disabled="$store.state.saleItems.filter(item => item.selectedCart === Number(this.tab)).length === 0">
+                    Sepeti Temizle
+                  </v-btn>
+                  <v-btn color="success" variant="tonal" class="mr-2"
+                    :disabled="$store.state.saleItems.filter(item => item.selectedCart === Number(this.tab)).length === 0"
+                    @click="completeSale" :loading="completingSale">
+                    Satışı Tamamla
+                  </v-btn>
+                  <v-spacer></v-spacer>
+                  <p class="text-h5 font-weight-bold mr-4">{{ currentCartTotal.toFixed(2) }} ₺</p>
+                </v-row>
               </v-tabs-window-item>
             </v-tabs-window>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="4">
-        <!-- Toplam Kartı -->
-        <v-card>
-          <v-card-title class="bg-primary text-white">
-            Toplam
-          </v-card-title>
-          <v-card-text class="text-center py-8">
-            <h1 class="text-h3 font-weight-bold">{{ currentCartTotal.toFixed(2) }} ₺</h1>
-            <v-divider class="my-4"></v-divider>
-            <v-btn color="success" size="large" block
-              :disabled="$store.state.saleItems.filter(item => item.selectedCart === Number(this.tab)).length === 0"
-              @click="completeSale" :loading="completingSale">
-              Satışı Tamamla
-            </v-btn>
-            <v-btn color="error" variant="outlined" block class="mt-2" @click="clearCart"
-              v-if="$store.state.saleItems.filter(item => item.selectedCart === Number(this.tab)).length > 0">
-              Sepeti Temizle
-            </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
@@ -140,7 +130,20 @@
     <!-- Manuel Ürün Ekleme Modal -->
     <v-dialog v-model="showManualProduct" max-width="600" max-height="80vh" scrollable>
       <v-card>
-        <v-card-title>Manuel Ürün Ekle</v-card-title>
+        <v-card-title><v-row>
+            <v-col>
+              Ürün Ekle
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-tooltip text="Close" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" size="medium" variant="text" @click="showManualProduct = false"
+                  class="mr-1 custom-btn">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </v-row></v-card-title>
         <v-card-subtitle>
           <v-select v-model="selectedManualProduct" :items="$store.state.products" item-title="name" item-value="id"
             label="Ürün Seç" return-object></v-select>
@@ -163,8 +166,9 @@
         </v-card-text>
         <v-card-actions class="pa-4 bg-grey-lighten-5">
           <v-spacer></v-spacer>
-          <v-btn @click="showManualProduct = false" variant="outlined">İptal</v-btn>
-          <v-btn color="primary" :disabled="selectedManualProduct === null && selectedItems.length === 0"
+          <v-btn @click="showManualProduct = false">İptal</v-btn>
+          <v-btn color="primary" variant="outlined"
+            :disabled="selectedManualProduct === null && selectedItems.length === 0"
             @click="addManualProduct">Ekle</v-btn>
         </v-card-actions>
       </v-card>

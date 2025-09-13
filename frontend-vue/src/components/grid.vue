@@ -9,14 +9,25 @@
               {{ item.total }} ₺
             </div>
           </div>
+          <div v-if="isForSale === false">
+            <div class="total-amount">
+              {{ item.quantity }} {{ item.product.unit }}
+            </div>
+          </div>
           <v-card-text class="d-flex flex-column align-center text-center">
-            <v-avatar size="60" color="primary" class="mb-3">
-              📋
-            </v-avatar>
+            <v-icon size="60">mdi-image-area</v-icon>
             <h3>{{ item.product.name }}</h3>
-            <v-chip color="success" size="small">
-              {{ item.product.price }} ₺ - {{ item.product.unit }}
+            <v-chip v-if="isForSale" color="success" size="small">
+              {{ item.product.price }} ₺ ({{ item.product.unit }})
             </v-chip>
+            <v-col class="px-0" v-if="isForSale === false">
+              <v-chip class="mb-2" color="success" size="small">
+                {{ item.product.price }} ₺ ({{ item.product.unit }})
+              </v-chip>
+              <div class="total-sale-price">
+                {{ item.total_price }} ₺
+              </div>
+            </v-col>
             <div class="quantity-container" v-if="isForSale">
               <!-- Container that reserves space for all elements -->
               <div class="quantity-inner">
@@ -188,6 +199,11 @@
   font-size: 0.75rem;
   font-weight: bold;
   color: #1976d2;
+}
+
+.total-sale-price {
+  font-weight: bold;
+  font-size: large;
 }
 
 .mark-icon {
